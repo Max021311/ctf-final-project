@@ -1,0 +1,157 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crud-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crud-server
+  template:
+    metadata:
+      labels:
+        app: crud-server
+    spec:
+      containers:
+        - name: crud-server
+          image: "jose9348/ctf-crud-microservice:1.0"
+          ports:
+          - containerPort: 80
+          env:
+            - name: AUTH_HOST
+              value: "http://auth-service.default.svc.cluster.local:81/api/auth"
+            - name: PREFIX
+              value: "/api/crud"
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_USER
+              value: postgres
+            - name: DB_NAME
+              value: postgres
+            - name: DB_PASSWORD
+              value: postgres
+            - name: DB_SSL
+              value: "true"
+            - name: PGSSLMODE
+              value: require
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: auth-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-server
+  template:
+    metadata:
+      labels:
+        app: auth-server
+    spec:
+      containers:
+        - name: auth-server
+          image: "jose9348/ctf-auth-microservice:1.0"
+          ports:
+          - containerPort: 80
+          env:
+            - name: PREFIX
+              value: "/api/auth"
+            - name: DB_HOST
+              value: "postgres"
+            - name: DB_USER
+              value: postgres
+            - name: DB_NAME
+              value: postgres
+            - name: DB_PASSWORD
+              value: postgres
+            - name: DB_SSL
+              value: "true"
+            - name: PGSSLMODE
+              value: require
+---
+# The frontend its a electron app. But you can make it run like traditional web app.
+# apiVersion: v1
+# kind: Deployment
+# metadata:
+#   name: web-app
+# spec:
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       app: web-app
+#   template:
+#     metadata:
+#       labels:
+#         app: web-app
+#     spec:
+#       containers:
+#         - name: web-app
+#           image: jose9348/ctf-web-app
+#           ports:
+#           - containerPort: 80
+#           env:
+#             - name: PORT
+#               value: 80
+#             - name: VITE_AUTH_SERVER_HOST 
+#               value: http://tu-host.com/api/auth
+#             - name: VITE_CRUD_SERVER_HOST
+#               value: http://tu-host.com/api/crud
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crud-service
+spec:
+  selector:
+    app: crud-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  selector:
+    app: auth-server
+  ports:
+    - protocol: TCP
+      port: 81
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  rules:
+    # If the host is setted is require that every request to the ingress must have the header `Host: ingress.info`
+    # - host: ingress.info
+    - http:
+        paths:
+        # External host -> Internal hosts
+        # http://ingress.info/api/crud/ok -> http://crud-service.default.svc.cluster.loca/api/crud/ok"
+          - path: /api/crud
+            pathType: Prefix
+            backend:
+              service:
+                name: crud-service
+                port:
+                  number: 80
+        # External host -> Internal hosts
+        # http://ingress.info/api/auth/ok -> http://auth-service.default.svc.cluster.loca/api/auth/ok"
+          - path: /api/auth
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 81
