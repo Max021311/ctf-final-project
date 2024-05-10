@@ -1,3 +1,16 @@
+# Create a secret to store the db login data
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secrets
+type: Opaque
+stringData:
+  # Replace with the real login data
+  db-host: localhost
+  db-user: postgres
+  db-name: postgres
+  db-password: postgres
+---
 # Define pod deployment
 apiVersion: apps/v1
 kind: Deployment
@@ -25,19 +38,31 @@ spec:
           env:
             # The the domain inside the kubernetes cluster that the DNS resolve to the auth-service cluster IP.
             - name: AUTH_HOST
-              value: "http://auth-service.default.svc.cluster.local:81/api/auth"
+              value: "http://auth-service:81/api/auth"
             # The prefix to use inside the server this prefix must match with the prefix specified in the Ingress or Gateway
             - name: PREFIX
               value: "/api/crud"
-            # Set the env vars for the container using the system env vars with the same name to avoid leak secrets in the file
+            # Set the env vars for container using secrets.
             - name: DB_HOST
-              value: "localhost"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-host
             - name: DB_USER
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-user
             - name: DB_NAME
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-name
             - name: DB_PASSWORD
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-password
             - name: DB_SSL
               value: "true"
             - name: PGSSLMODE
@@ -67,15 +92,27 @@ spec:
             # The prefix to use inside the server this prefix must match with the prefix specified in the Ingress or Gateway
             - name: PREFIX
               value: "/api/auth"
-            # Set the env vars for the container using the system env vars with the same name to avoid leak secrets in the file
+            # Set the env vars for container using secrets.
             - name: DB_HOST
-              value: "localhost"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-host
             - name: DB_USER
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-user
             - name: DB_NAME
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-name
             - name: DB_PASSWORD
-              value: "postgres"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: db-password
             - name: DB_SSL
               value: "true"
             - name: PGSSLMODE
