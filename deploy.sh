@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ ! -f ./manifest.yaml ]; then
-  echo "Missing ./secrets.yaml"
+  echo "Missing ./manifest.yaml"
   exit 1
 fi
 
