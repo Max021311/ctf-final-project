@@ -1,8 +1,11 @@
+# Define pod deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  # Deployment name
   name: crud-server
 spec:
+  # Run two pods with the same server and balance the load.
   replicas: 2
   selector:
     matchLabels:
@@ -14,22 +17,27 @@ spec:
     spec:
       containers:
         - name: crud-server
+          # Name of the image to use
           image: "jose9348/ctf-crud-microservice:1.0"
           ports:
           - containerPort: 80
+          # Environmente required by the server
           env:
+            # The the domain inside the kubernetes cluster that the DNS resolve to the auth-service cluster IP.
             - name: AUTH_HOST
               value: "http://auth-service.default.svc.cluster.local:81/api/auth"
+            # The prefix to use inside the server this prefix must match with the prefix specified in the Ingress or Gateway
             - name: PREFIX
               value: "/api/crud"
+            # Set the env vars for the container using the system env vars with the same name to avoid leak secrets in the file
             - name: DB_HOST
-              value: "postgres"
+              value: "localhost"
             - name: DB_USER
-              value: postgres
+              value: "postgres"
             - name: DB_NAME
-              value: postgres
+              value: "postgres"
             - name: DB_PASSWORD
-              value: postgres
+              value: "postgres"
             - name: DB_SSL
               value: "true"
             - name: PGSSLMODE
@@ -38,6 +46,7 @@ spec:
 apiVersion: "apps/v1"
 kind: Deployment
 metadata:
+  # Deployment name
   name: auth-server
 spec:
   replicas: 2
@@ -55,16 +64,18 @@ spec:
           ports:
           - containerPort: 80
           env:
+            # The prefix to use inside the server this prefix must match with the prefix specified in the Ingress or Gateway
             - name: PREFIX
               value: "/api/auth"
+            # Set the env vars for the container using the system env vars with the same name to avoid leak secrets in the file
             - name: DB_HOST
-              value: "postgres"
+              value: "localhost"
             - name: DB_USER
-              value: postgres
+              value: "postgres"
             - name: DB_NAME
-              value: postgres
+              value: "postgres"
             - name: DB_PASSWORD
-              value: postgres
+              value: "postgres"
             - name: DB_SSL
               value: "true"
             - name: PGSSLMODE
@@ -101,11 +112,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  # Service name
   name: crud-service
 spec:
   selector:
+    # Select the deployment with `crud-server` as name
     app: crud-server
   ports:
+    # Expose the port 80 and route the traffic inside the container to the port 80
     - protocol: TCP
       port: 80
       targetPort: 80
@@ -115,11 +129,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  # Service name
   name: auth-service
 spec:
   selector:
+    # Select the deployment with `auth-server` as name
     app: auth-server
   ports:
+    # Expose the port 81 and route the traffic inside the container to the port 80
     - protocol: TCP
       port: 81
       targetPort: 80
@@ -129,9 +146,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: my-ingress
-  annotations:
-    kubernetes.io/ingress.class: "nginx"
 spec:
+  ingressClassName: 'nginx'
   rules:
     # If the host is setted is require that every request to the ingress must have the header `Host: ingress.info`
     # - host: ingress.info
@@ -143,6 +159,7 @@ spec:
             pathType: Prefix
             backend:
               service:
+                # Map tthe traffic to the service with `crud-service` as name
                 name: crud-service
                 port:
                   number: 80
@@ -152,6 +169,7 @@ spec:
             pathType: Prefix
             backend:
               service:
+                # Map tthe traffic to the service with `auth-service` as name
                 name: auth-service
                 port:
                   number: 81
