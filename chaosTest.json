@@ -1,0 +1,41 @@
+{
+  "title": "Terminate one replica of auth-server",
+  "description": "Verify the resilience of the system when one replica of auth-server goes down",
+  "steady-state-hypothesis": {
+    "title": "Verifying service remains healthy",
+    "probes": [
+      {
+        "name": "all-our-microservices-should-be-healthy",
+        "type": "probe",
+        "tolerance": true,
+        "provider": {
+          "type": "python",
+          "module": "chaosk8s.probes",
+          "func": "deployment_available_and_healthy",
+          "arguments": {
+            "name": "auth-server"
+          }
+        }
+      }
+    ]
+  },
+  "method": [
+    {
+      "type": "action",
+      "name": "terminate-auth-server-pod",
+      "provider": {
+        "type": "python",
+        "module": "chaosk8s.pod.actions",
+        "func": "terminate_pods",
+        "arguments": {
+          "label_selector": "app=auth-server",
+          "name_pattern": "auth-server-[0-9]$",
+          "rand": true
+        }
+      },
+      "pauses": {
+        "after": 5
+      }
+    }
+  ]
+}
