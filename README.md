@@ -47,15 +47,19 @@ diferentes componentes de la aplicación dentro del
 clúster de Kubernetes
 
 - **Ingress** `my-ingress`__:__
-Actúa como punto de entrada a la aplicación desde el exterior del clúster,
-enruta el tráfico HTTP entrante a los servicios internos crud-service y
-auth-service según las rutas especificadas.
-De esta manera, permite que las solicitudes externas lleguen a los
+Punto de entrada externo hacia el clúster, enruta el
+tráfico HTTP entrante a los servicios internos
+crud-service y auth-service en las rutas `/api/crud`
+y `/api/auth` respectivamente. De esta manera, permite
+que las solicitudes externas lleguen a los
 componentes correspondientes de la aplicación.
 
 - La arquitectura también incluye **`Istio`** como una capa de servicio de
 malla, que proporciona funcionalidades como _el enrutamiento, el control de tráfico, la seguridad y la observabilidad_ para los servicios desplegados en el clúster de Kubernetes.
 A través de la configuración de _reglas de tráfico y políticas de seguridad_, Istio ayuda a gestionar y asegurar las comunicaciones entre los diferentes componentes de la aplicación.
+
+- **Base de datos:**
+Para la base de datos se usa dos instancias de AWS RDS (Una de escritura y otra de lectura) que se acceden mediante un proxy de RDS el cuál enruta el tráfico de lectura y escritura a la instancia correspondiente. Además de permitir que en caso de error en la instancia de escritura cambiar la de lectura a escritura durante el tiempo que tome estabilizar la instancia para después sincronizarlas y restablecer sus roles.
 
 ### Testing
 
@@ -63,7 +67,7 @@ Para probar la robustez y la resiliencia del sistema, se utiliza **`Chaos Toolki
 
 Con Chaos Toolkit, se pueden **simular condiciones adversas**, como fallos de red o caídas de servicios, para evaluar cómo responde el sistema en situaciones de estrés. Esto ayuda a identificar posibles puntos débiles y a mejorar la capacidad de recuperación del sistema frente a fallos inesperados.
 
-Aqui fue utilizado para terminar un pod al azar del servidor de autenticación y evaluar la respuesta del cluster a este error fatal.
+Aquí fue utilizado para terminar un pod al azar del servidor de autenticación y evaluar la respuesta del cluster a este error fatal.
 
 ![Chaos Toolkit screenshot](readmeImgs/pr1.png "Chaos toolkit screenshot")
 
