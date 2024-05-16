@@ -1,8 +1,12 @@
-# Helados Micro
+# :shaved_ice: Helados Micro 
 
-Este proyecto implica la creación de un **_punto de venta para una heladería_**, organizado en una app de micro servicios, que controla el [_CRUD_](#repos-utilizados) y el [_AUTH_](#repos-utilizados), junto con una [Web_App](#repos-utilizados) escrita en __VUE.js__ y envuelta en __electron.js__ para interactuar con la app de micro servicios.
+Este proyecto implica la creación de la estructura del back de un **_punto de venta para una heladería_**, organizado en servicios dentro de un cluster de kubernetes, los servicios usados son  un [_CRUD_](#repos-utilizados)  y un [_AUTH_](#repos-utilizados), que son implementados en una arquitectura de microservicios.
 
-![alt text](readmeImgs/back.jpg "image title")
+Estos son accesados con una [Web_App](#repos-utilizados) escrita en __VUE.js__ y envuelta en __electron.js__ para interactuar con la arquitectura de __microservicios__.
+
+
+
+<img src="readmeImgs/back.jpg" alt="back" width="450"/>
 
 ## Índice
 
@@ -15,11 +19,12 @@ Este proyecto implica la creación de un **_punto de venta para una heladería_*
     - [Iniciar Kubernetes en Docker Desktop y desplegar el proyecto](#iniciar-kubernetes-en-docker-desktop-y-desplegar-el-proyecto)
     - [Instalar y configurar Istio](#instalar-y-configurar-istio)
     - [Desplegar el proyecto](#desplegar-el-proyecto)
-    - [Probar el proyecto](#probar-el-proyecto)
+    - [Probar el proyecto](#probar-el-proyecto) 
+6. [Web APP](#web-app)
 ## Contenido
 
 ### Diagrama de micro servicios generado en Istio
-![Diagrama de Istio](readmeImgs/d1.png "Diagrama de Istio")
+![Diagrama de Istio](readmeImgs/istio2.jpeg "Diagrama de Istio")
 
 ### Arquitectura
 La arquitectura descrita en el YAML es la siguiente, el documento de manifiesto de Kubernetes sirve para desplegar un cluster de Kubernetes que especifique una arquitectura en especifico.
@@ -58,21 +63,31 @@ componentes correspondientes de la aplicación.
 malla, que proporciona funcionalidades como _el enrutamiento, el control de tráfico, la seguridad y la observabilidad_ para los servicios desplegados en el clúster de Kubernetes.
 A través de la configuración de _reglas de tráfico y políticas de seguridad_, Istio ayuda a gestionar y asegurar las comunicaciones entre los diferentes componentes de la aplicación.
 
+
 - **Base de datos:**
-Para la base de datos se usa dos instancias de AWS RDS (Una de escritura y otra de lectura) que se acceden mediante un proxy de RDS el cuál enruta el tráfico de lectura y escritura a la instancia correspondiente. Además de permitir que en caso de error en la instancia de escritura cambiar la de lectura a escritura durante el tiempo que tome estabilizar la instancia para después sincronizarlas y restablecer sus roles.
+Para la base de datos se usa dos instancias de `AWS RDS` (Una de escritura y otra de lectura) que se acceden mediante un __proxy de RDS__ el cuál enruta el tráfico de lectura y escritura a la instancia correspondiente. Además de permitir que en caso de error en la instancia de escritura cambiar la de lectura a escritura durante el tiempo que tome estabilizar la instancia para después sincronizarlas y restablecer sus roles.
 
 ### Testing
 
-Para probar la robustez y la resiliencia del sistema, se utiliza **`Chaos Toolkit`**, una herramienta que permite *realizar pruebas de caos de manera controlada*.
+Para probar __la robustez__ y __la resiliencia__ del sistema, se utiliza **`Chaos Toolkit`**, una herramienta que permite *realizar pruebas de caos de manera controlada*.
 
 Con Chaos Toolkit, se pueden **simular condiciones adversas**, como fallos de red o caídas de servicios, para evaluar cómo responde el sistema en situaciones de estrés. Esto ayuda a identificar posibles puntos débiles y a mejorar la capacidad de recuperación del sistema frente a fallos inesperados.
 
-Aquí fue utilizado para terminar un pod al azar del servidor de autenticación y evaluar la respuesta del cluster a este error fatal.
+Aquí fue utilizado para terminar un pod al azar del servidor de autenticación y evaluar la respuesta del cluster a este error fatal, y la libreria corre una serie de instrucciones para probar una teoria, la teoria es que si cae un pod al azar del cluster, el cluster se sigue comportando bien, este fue el output:
 
 ![Chaos Toolkit screenshot](readmeImgs/pr1.png "Chaos toolkit screenshot")
 
+Para ejecutar este TEST necesitara tener `python 3` e instalar la libreria de chaos toolkit para kubernetes con este comando:
+```bash
+pip install chaostoolkit chaostoolkit-kubernetes
+```
+ya que tengamos la libreria instalada, de preferencia en un __entorno virtual__, ejecute este comando para ejecutar la prueba
+```bash
+chaos run chaosTest.json
+```
 ### Repos utilizados
-- https://github.com/Max021311/ctf-web-app (El cliente de escritorio que consume el API de los servidores)
+- https://github.com/Max021311/ctf-web-app (El [cliente de escritorio](#web-app) que consume el API de los servidores)
+
 - https://github.com/Max021311/ctf-crud-microservice (Para generar la imagen de Docker del servidor CRUD)
 - https://github.com/Max021311/ctf-auth-microservice (Para generar la imagen de Docker del servidor autenticación)
 
@@ -146,3 +161,25 @@ kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.21/samp
 
 Ahora descarga el repositorio https://github.com/Max021311/ctf-web-app y ejecuta el proyecto siguiendo el README.md.
 Sera necesario que configures las variables de entorno `VITE_AUTH_SERVER_HOST` y `VITE_CRUD_SERVER_HOST` a la respectiva IP donde se expone el Ingress y en su respectiva ruta.
+
+## Web APP
+La APP de escritorio sirve como una forma de conectarse a toda la estructura de kubernetes para hacer sus funciones normales, desde la app realmente nada cambia pero con esta estructura nos aseguramos de la integridad de la comunicacion en el back y de su disponibilidad indefinida.
+
+<img src="readmeImgs/wap1.png" alt="back" width="400"/>
+
+Una vez adentro de la aplicacion de escritorio bastara con usar las credenciales predeterminadas:
+
+```
+   email -> example@example.com
+password -> **********
+```
+Y tendras acceso a las funciones del CRUD como la de __registrar ventas, ver las ventas, los empleados y subir materiales__:
+
+![wap2](readmeImgs/wap2.jpeg "Web app Ventas")
+![wap3](readmeImgs/wap3.jpeg "Web app Venta")
+![wap4](readmeImgs/wap4.jpeg "Web app Empleados")
+---
+### Finalmente, realizamos un video para explicar su funcionamiento y testeo en tiempo real.
+ Link de youtube: https://youtu.be/6V7sdCSvdeI
+
+ ---
