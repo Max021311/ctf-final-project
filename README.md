@@ -77,11 +77,11 @@ Aquí fue utilizado para terminar un pod al azar del servidor de autenticación 
 
 ![Chaos Toolkit screenshot](readmeImgs/pr1.png "Chaos toolkit screenshot")
 
-Para ejecutar este TEST necesitara tener `python 3` e instalar la libreria de chaos toolkit para kubernetes con este comando:
+Para ejecutar este TEST necesitara tener `python 3` e instalar  chaos toolkit para kubernetes con este comando:
 ```bash
 pip install chaostoolkit chaostoolkit-kubernetes
 ```
-ya que tengamos la libreria instalada, de preferencia en un __entorno virtual__, ejecute este comando para ejecutar la prueba
+ya que tengamos instalado chaos toolkit, de preferencia en un __entorno virtual__, ejecute este comando para ejecutar la prueba
 ```bash
 chaos run chaosTest.json
 ```
