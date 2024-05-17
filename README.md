@@ -2,7 +2,7 @@
 
 Este proyecto implica la creación de la estructura del back de un **_punto de venta para una heladería_**, organizado en servicios dentro de un cluster de kubernetes, los servicios usados son  un [_CRUD_](#repos-utilizados)  y un [_AUTH_](#repos-utilizados), que son implementados en una arquitectura de microservicios.
 
-Estos son accesados con una [Web_App](#repos-utilizados) escrita en __VUE.js__ y envuelta en __electron.js__ para interactuar con la arquitectura de __microservicios__.
+Se accede a estos micro servicios mediante una [Web_App](#repos-utilizados) escrita en __VUE.js__ y usando __electron.js__ para empaquetarla como app de escritorio que permite interactuar con la arquitectura de __microservicios__.
 
 
 
