@@ -180,6 +180,6 @@ Y tendras acceso a las funciones del CRUD como la de __registrar ventas, ver las
 ![wap4](readmeImgs/wap4.jpeg "Web app Empleados")
 ---
 ### Finalmente, realizamos un video para explicar su funcionamiento y testeo en tiempo real.
- Link de youtube: https://youtu.be/6V7sdCSvdeI
+ Link de youtube: [https://youtu.be/6V7sdCSvdeI](https://www.youtube.com/watch?v=6V7sdCSvdeI)
 
  ---
